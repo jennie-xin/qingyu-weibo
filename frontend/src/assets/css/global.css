@@ -1,0 +1,74 @@
+/* ========================================
+   轻语 - 全局样式重置与基础变量
+   马卡龙配色系统
+======================================== */
+
+:root {
+  --color-bg: #FDF6F0;
+  --color-card: #FFFFFF;
+  --color-primary: #F2A7B0;
+  --color-blue: #A8D8EA;
+  --color-purple: #C3B1E1;
+  --color-green: #B5EAD7;
+  --color-yellow: #FFEAA7;
+  --color-text: #2D2D2D;
+  --color-text-light: #8E8E8E;
+  --color-border: #F0E6E0;
+  --color-hover: #FFF0F3;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-card: 0 2px 12px rgba(242, 167, 176, 0.08);
+  --shadow-hover: 0 6px 20px rgba(242, 167, 176, 0.15);
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-body: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-blue);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--color-primary);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+input, textarea {
+  border: none;
+  outline: none;
+  font-family: inherit;
+  background: transparent;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
