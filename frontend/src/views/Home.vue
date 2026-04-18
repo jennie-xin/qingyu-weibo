@@ -5,17 +5,101 @@
         <div class="avatar-placeholder"></div>
       </div>
       <div class="trigger-input">今天想说点什么...</div>
+      <button class="trigger-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
     </div>
+
     <div class="feed">
-      <p class="feed-empty">还没有人发言，来做第一个吧 ✨</p>
+      <LoadingDots v-if="postStore.loading" text="加载中..." />
+      <template v-else-if="postStore.posts.length">
+        <PostCard
+          v-for="post in postStore.posts"
+          :key="post.id"
+          :post="post"
+          :current-user-id="userStore.userInfo?.id"
+          :is-admin="userStore.isAdmin"
+          @like="handleLike"
+          @delete="handleDelete"
+        />
+        <div v-if="postStore.hasMore" class="load-more">
+          <button class="btn-load-more" @click="loadMore">加载更多</button>
+        </div>
+        <p v-else class="feed-end">没有更多了 ~</p>
+      </template>
+      <div v-else class="feed-empty-state">
+        <div class="empty-illustration">
+          <div class="empty-circle"></div>
+          <div class="empty-line"></div>
+          <div class="empty-line short"></div>
+        </div>
+        <p>还没有人发言，来做第一个吧</p>
+      </div>
     </div>
+
+    <PublishModal
+      :visible="showPublish"
+      @close="showPublish = false"
+      @publish="handlePublish"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { usePostStore } from '../stores/post'
+import { useUserStore } from '../stores/user'
+import { postApi, likeApi, uploadApi } from '../api'
+import PostCard from '../components/PostCard.vue'
+import PublishModal from '../components/PublishModal.vue'
+import LoadingDots from '../components/LoadingDots.vue'
 
+const postStore = usePostStore()
+const userStore = useUserStore()
 const showPublish = ref(false)
+
+onMounted(() => {
+  postStore.fetchPosts(1)
+})
+
+const loadMore = () => {
+  postStore.fetchPosts(postStore.currentPage + 1)
+}
+
+const handleLike = async (postId) => {
+  try {
+    const res = await likeApi.toggle(postId)
+    postStore.toggleLike(postId, res.data.liked)
+  } catch (e) {
+    console.error('点赞失败:', e)
+  }
+}
+
+const handleDelete = async (postId) => {
+  try {
+    await postApi.remove(postId)
+    postStore.removePost(postId)
+  } catch (e) {
+    console.error('删除失败:', e)
+  }
+}
+
+const handlePublish = async ({ content, images }) => {
+  let imageUrls = []
+  if (images.length) {
+    for (const file of images) {
+      const res = await uploadApi.image(file)
+      imageUrls.push(res.data)
+    }
+  }
+  const res = await postApi.create({
+    content,
+    images: imageUrls.length ? JSON.stringify(imageUrls) : null
+  })
+  postStore.addPost(res.data)
+}
 </script>
 
 <style>
@@ -56,14 +140,82 @@ const showPublish = ref(false)
   font-size: 0.9rem;
 }
 
+.trigger-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.trigger-btn:hover {
+  background: #e8939d;
+  transform: scale(1.1);
+}
+
 .feed {
   margin-top: 20px;
 }
 
-.feed-empty {
+.feed-empty-state {
   text-align: center;
-  color: var(--color-text-light);
   padding: 60px 0;
-  font-size: 0.95rem;
+  color: var(--color-text-light);
+}
+
+.empty-illustration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.empty-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px dashed var(--color-border);
+}
+
+.empty-line {
+  width: 80px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-border);
+}
+
+.empty-line.short {
+  width: 50px;
+}
+
+.load-more {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.btn-load-more {
+  padding: 10px 28px;
+  background: transparent;
+  border: 1.5px solid var(--color-border);
+  border-radius: 20px;
+  color: var(--color-text-light);
+  font-size: 0.85rem;
+}
+
+.btn-load-more:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-hover);
+}
+
+.feed-end {
+  text-align: center;
+  padding: 20px 0;
+  font-size: 0.85rem;
+  color: var(--color-text-light);
 }
 </style>
