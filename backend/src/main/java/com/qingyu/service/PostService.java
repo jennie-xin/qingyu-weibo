@@ -1,0 +1,119 @@
+package com.qingyu.service;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.qingyu.entity.Post;
+import com.qingyu.entity.User;
+import com.qingyu.mapper.LikeMapper;
+import com.qingyu.mapper.PostMapper;
+import com.qingyu.mapper.UserMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+public class PostService {
+
+    @Autowired
+    private PostMapper postMapper;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private LikeMapper likeMapper;
+
+    public Map<String, Object> getList(int page, int size, Long currentUserId) {
+        Page<Post> pageParam = new Page<>(page, size);
+        QueryWrapper<Post> query = new QueryWrapper<>();
+        query.orderByDesc("created_at");
+
+        IPage<Post> result = postMapper.selectPage(pageParam, query);
+        List<Map<String, Object>> records = result.getRecords().stream()
+                .map(post -> enrichPost(post, currentUserId))
+                .collect(Collectors.toList());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("records", records);
+        data.put("total", result.getTotal());
+        data.put("pages", result.getPages());
+        return data;
+    }
+
+    public Map<String, Object> getDetail(Long postId, Long currentUserId) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new RuntimeException("微博不存在");
+        }
+        return enrichPost(post, currentUserId);
+    }
+
+    public Map<String, Object> create(Long userId, String content, String images) {
+        Post post = new Post();
+        post.setUserId(userId);
+        post.setContent(content);
+        post.setImages(images);
+        post.setLikeCount(0);
+        post.setCommentCount(0);
+        postMapper.insert(post);
+        return enrichPost(post, userId);
+    }
+
+    public void delete(Long postId, Long userId, String role) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new RuntimeException("微博不存在");
+        }
+        if (!post.getUserId().equals(userId) && !"admin".equals(role)) {
+            throw new RuntimeException("没有权限删除");
+        }
+        postMapper.deleteById(postId);
+    }
+
+    public List<Map<String, Object>> getByUserId(Long userId, Long currentUserId) {
+        QueryWrapper<Post> query = new QueryWrapper<>();
+        query.eq("user_id", userId).orderByDesc("created_at");
+        List<Post> posts = postMapper.selectList(query);
+        return posts.stream()
+                .map(post -> enrichPost(post, currentUserId))
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, Object> enrichPost(Post post, Long currentUserId) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", post.getId());
+        map.put("userId", post.getUserId());
+        map.put("content", post.getContent());
+        map.put("likeCount", post.getLikeCount());
+        map.put("commentCount", post.getCommentCount());
+        map.put("createdAt", post.getCreatedAt());
+
+        if (post.getImages() != null && !post.getImages().isEmpty()) {
+            map.put("images", post.getImages());
+        }
+
+        User author = userMapper.selectById(post.getUserId());
+        if (author != null) {
+            map.put("nickname", author.getNickname());
+            map.put("avatar", author.getAvatar());
+        }
+
+        if (currentUserId != null) {
+            long likeCount = likeMapper.selectCount(
+                new QueryWrapper<com.qingyu.entity.Like>()
+                    .eq("post_id", post.getId())
+                    .eq("user_id", currentUserId)
+            );
+            map.put("liked", likeCount > 0);
+        } else {
+            map.put("liked", false);
+        }
+
+        return map;
+    }
+}
