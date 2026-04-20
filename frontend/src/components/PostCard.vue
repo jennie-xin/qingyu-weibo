@@ -26,8 +26,8 @@
     </div>
 
     <div class="post-card-footer">
-      <button class="action-btn" @click.stop="handleLike">
-        <svg width="18" height="18" viewBox="0 0 24 24" :fill="post.liked ? 'var(--color-primary)' : 'none'" :stroke="post.liked ? 'var(--color-primary)' : 'currentColor'" stroke-width="2">
+      <button class="action-btn like-btn" :class="{ 'is-liked': post.liked }" @click.stop="handleLike($event)">
+        <svg class="like-icon" width="18" height="18" viewBox="0 0 24 24" :fill="post.liked ? 'var(--color-primary)' : 'none'" :stroke="post.liked ? 'var(--color-primary)' : 'currentColor'" stroke-width="2">
           <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
         </svg>
         <span :class="{ 'liked': post.liked }">{{ post.likeCount || '' }}</span>
@@ -46,6 +46,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { formatTime } from '../utils/time'
+import { createLikeParticles } from '../utils/particles'
 
 const props = defineProps({
   post: { type: Object, required: true },
@@ -80,7 +81,10 @@ const goDetail = () => {
   router.push(`/post/${props.post.id}`)
 }
 
-const handleLike = () => {
+const handleLike = (event) => {
+  if (!props.post.liked) {
+    createLikeParticles(event)
+  }
   emit('like', props.post.id)
 }
 
@@ -264,5 +268,16 @@ const previewImage = (index) => {
 .action-btn .liked {
   color: var(--color-primary);
   font-weight: 600;
+}
+
+.like-btn.is-liked .like-icon {
+  animation: heartBeat 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
 }
 </style>
