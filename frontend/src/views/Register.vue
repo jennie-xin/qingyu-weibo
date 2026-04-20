@@ -36,10 +36,13 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
+const errorMsg = ref('')
 
 const form = reactive({
   username: '',
@@ -48,11 +51,29 @@ const form = reactive({
   confirmPassword: ''
 })
 
-const handleRegister = () => {
-  if (form.password !== form.confirmPassword) {
-    alert('两次密码不一致')
+const handleRegister = async () => {
+  errorMsg.value = ''
+  if (!form.username || !form.nickname || !form.password) {
+    errorMsg.value = '请填写完整信息'
     return
   }
-  console.log('register:', form)
+  if (form.password !== form.confirmPassword) {
+    errorMsg.value = '两次密码不一致'
+    return
+  }
+  if (form.password.length < 6) {
+    errorMsg.value = '密码至少6位'
+    return
+  }
+  try {
+    await userStore.register({
+      username: form.username,
+      nickname: form.nickname,
+      password: form.password
+    })
+    router.push('/login')
+  } catch (e) {
+    errorMsg.value = e.message || '注册失败'
+  }
 }
 </script>

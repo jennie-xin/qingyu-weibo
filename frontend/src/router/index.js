@@ -34,18 +34,49 @@ const routes = [
   {
     path: '/admin',
     name: 'Admin',
-    component: () => import('../views/Admin.vue')
+    component: () => import('../views/Admin.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/notifications',
     name: 'Notifications',
-    component: () => import('../views/Notifications.vue')
+    component: () => import('../views/Notifications.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+
+  if (to.meta.requiresAuth && !token) {
+    next('/login')
+    return
+  }
+
+  if (to.meta.requiresAdmin) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      if (payload.role !== 'admin') {
+        next('/')
+        return
+      }
+    } catch (e) {
+      next('/login')
+      return
+    }
+  }
+
+  if ((to.name === 'Login' || to.name === 'Register') && token) {
+    next('/')
+    return
+  }
+
+  next()
 })
 
 export default router

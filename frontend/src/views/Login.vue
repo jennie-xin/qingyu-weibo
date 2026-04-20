@@ -18,6 +18,7 @@
           <label>密码</label>
           <input type="password" v-model="form.password" placeholder="请输入密码" />
         </div>
+        <p v-if="errorMsg" class="form-error">{{ errorMsg }}</p>
         <button type="submit" class="btn-primary">登录</button>
         <p class="form-footer">
           还没有账号？<router-link to="/register">去注册</router-link>
@@ -28,19 +29,31 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
+const errorMsg = ref('')
 
 const form = reactive({
   username: '',
   password: ''
 })
 
-const handleLogin = () => {
-  // 后面接API
-  console.log('login:', form)
+const handleLogin = async () => {
+  errorMsg.value = ''
+  if (!form.username || !form.password) {
+    errorMsg.value = '请填写用户名和密码'
+    return
+  }
+  try {
+    await userStore.login({ username: form.username, password: form.password })
+    router.push('/')
+  } catch (e) {
+    errorMsg.value = e.message || '登录失败'
+  }
 }
 </script>
 
@@ -173,5 +186,14 @@ const handleLogin = () => {
   margin-top: 20px;
   font-size: 0.85rem;
   color: var(--color-text-light);
+}
+
+.form-error {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #ffeaea;
+  border-radius: var(--radius-sm);
 }
 </style>
