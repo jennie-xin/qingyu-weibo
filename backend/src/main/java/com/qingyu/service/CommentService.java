@@ -27,6 +27,9 @@ public class CommentService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public List<Map<String, Object>> getByPostId(Long postId) {
         QueryWrapper<Comment> query = new QueryWrapper<>();
         query.eq("post_id", postId).orderByDesc("created_at");
@@ -60,6 +63,7 @@ public class CommentService {
         if (post != null) {
             post.setCommentCount(post.getCommentCount() + 1);
             postMapper.updateById(post);
+            notificationService.createNotification(post.getUserId(), userId, "comment", postId);
         }
 
         Map<String, Object> map = new HashMap<>();

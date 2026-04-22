@@ -28,6 +28,9 @@ public class PostService {
     @Autowired
     private LikeMapper likeMapper;
 
+    @Autowired
+    private TopicService topicService;
+
     public Map<String, Object> getList(int page, int size, Long currentUserId) {
         Page<Post> pageParam = new Page<>(page, size);
         QueryWrapper<Post> query = new QueryWrapper<>();
@@ -61,6 +64,7 @@ public class PostService {
         post.setLikeCount(0);
         post.setCommentCount(0);
         postMapper.insert(post);
+        topicService.extractAndSaveTopics(content, post.getId());
         return enrichPost(post, userId);
     }
 

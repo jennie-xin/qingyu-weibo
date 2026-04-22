@@ -20,6 +20,9 @@ public class LikeService {
     @Autowired
     private PostMapper postMapper;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public Map<String, Object> toggle(Long postId, Long userId) {
         QueryWrapper<Like> query = new QueryWrapper<>();
         query.eq("post_id", postId).eq("user_id", userId);
@@ -44,6 +47,7 @@ public class LikeService {
             post.setLikeCount(post.getLikeCount() + 1);
             postMapper.updateById(post);
             result.put("liked", true);
+            notificationService.createNotification(post.getUserId(), userId, "like", postId);
         }
 
         result.put("likeCount", post.getLikeCount());
