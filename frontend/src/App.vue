@@ -1,7 +1,7 @@
 <template>
   <div class="app">
     <NavBar v-if="showNav" />
-    <main class="main-content">
+    <main class="main-content" :class="{ 'full-width': isFullWidth }">
       <router-view />
     </main>
   </div>
@@ -17,6 +17,10 @@ const route = useRoute()
 const showNav = computed(() => {
   return !['Login', 'Register'].includes(route.name)
 })
+
+const isFullWidth = computed(() => {
+  return ['Login', 'Register'].includes(route.name)
+})
 </script>
 
 <style>
@@ -26,8 +30,13 @@ const showNav = computed(() => {
 }
 
 .main-content {
-  max-width: 800px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 80px 16px 32px;
+}
+
+.main-content.full-width {
+  max-width: none;
+  padding: 0;
 }
 </style>

@@ -1,42 +1,50 @@
 <template>
   <div class="home">
-    <div class="publish-trigger" @click="showPublish = true">
-      <div class="trigger-avatar">
-        <div class="avatar-placeholder"></div>
-      </div>
-      <div class="trigger-input">今天想说点什么...</div>
-      <button class="trigger-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-      </button>
-    </div>
+    <div class="home-layout">
+      <div class="home-main">
+        <div class="publish-trigger" @click="showPublish = true">
+          <div class="trigger-avatar">
+            <div class="avatar-placeholder"></div>
+          </div>
+          <div class="trigger-input">今天想说点什么...</div>
+          <button class="trigger-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+          </button>
+        </div>
 
-    <div class="feed">
-      <LoadingDots v-if="postStore.loading" text="加载中..." />
-      <template v-else-if="postStore.posts.length">
-        <PostCard
-          v-for="post in postStore.posts"
-          :key="post.id"
-          :post="post"
-          :current-user-id="userStore.userInfo?.id"
-          :is-admin="userStore.isAdmin"
-          @like="handleLike"
-          @delete="handleDelete"
-        />
-        <div v-if="postStore.hasMore" class="load-more">
-          <button class="btn-load-more" @click="loadMore">加载更多</button>
+        <div class="feed">
+          <LoadingDots v-if="postStore.loading" text="加载中..." />
+          <template v-else-if="postStore.posts.length">
+            <PostCard
+              v-for="post in postStore.posts"
+              :key="post.id"
+              :post="post"
+              :current-user-id="userStore.userInfo?.id"
+              :is-admin="userStore.isAdmin"
+              @like="handleLike"
+              @delete="handleDelete"
+            />
+            <div v-if="postStore.hasMore" class="load-more">
+              <button class="btn-load-more" @click="loadMore">加载更多</button>
+            </div>
+            <p v-else class="feed-end">没有更多了 ~</p>
+          </template>
+          <div v-else class="feed-empty-state">
+            <div class="empty-illustration">
+              <div class="empty-circle"></div>
+              <div class="empty-line"></div>
+              <div class="empty-line short"></div>
+            </div>
+            <p>还没有人发言，来做第一个吧</p>
+          </div>
         </div>
-        <p v-else class="feed-end">没有更多了 ~</p>
-      </template>
-      <div v-else class="feed-empty-state">
-        <div class="empty-illustration">
-          <div class="empty-circle"></div>
-          <div class="empty-line"></div>
-          <div class="empty-line short"></div>
-        </div>
-        <p>还没有人发言，来做第一个吧</p>
       </div>
+
+      <aside class="home-sidebar">
+        <HotTopics />
+      </aside>
     </div>
 
     <PublishModal
@@ -55,6 +63,7 @@ import { postApi, likeApi, uploadApi } from '../api'
 import PostCard from '../components/PostCard.vue'
 import PublishModal from '../components/PublishModal.vue'
 import LoadingDots from '../components/LoadingDots.vue'
+import HotTopics from '../components/HotTopics.vue'
 
 const postStore = usePostStore()
 const userStore = useUserStore()
@@ -105,6 +114,27 @@ const handlePublish = async ({ content, images }) => {
 <style>
 .home {
   padding-top: 16px;
+}
+
+.home-layout {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 24px;
+  align-items: start;
+}
+
+.home-sidebar {
+  position: sticky;
+  top: 80px;
+}
+
+@media (max-width: 768px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+  .home-sidebar {
+    display: none;
+  }
 }
 
 .publish-trigger {
