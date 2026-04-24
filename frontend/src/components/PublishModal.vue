@@ -48,6 +48,17 @@
                 <path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18" stroke-linecap="round"/>
               </svg>
             </button>
+            <div class="emoji-wrapper">
+              <button class="toolbar-btn" title="表情" @click="showEmoji = !showEmoji">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-yellow)" stroke-width="1.8">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke-linecap="round"/>
+                  <line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <EmojiPicker :visible="showEmoji" @select="insertEmoji" />
+            </div>
             <span class="char-count" :class="{ 'near-limit': content.length > 450 }">
               {{ content.length }}/500
             </span>
@@ -69,6 +80,7 @@
 
 <script setup>
 import { ref, computed, nextTick } from 'vue'
+import EmojiPicker from './EmojiPicker.vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false }
@@ -80,13 +92,20 @@ const content = ref('')
 const images = ref([])
 const publishing = ref(false)
 const textareaRef = ref(null)
+const showEmoji = ref(false)
 
 const canPublish = computed(() => {
   return content.value.trim().length > 0 && !publishing.value
 })
 
 const close = () => {
+  showEmoji.value = false
   emit('close')
+}
+
+const insertEmoji = (emoji) => {
+  content.value += emoji
+  showEmoji.value = false
 }
 
 const autoResize = () => {
@@ -267,6 +286,10 @@ const handlePublish = async () => {
 
 .toolbar-btn:hover {
   background: var(--color-hover);
+}
+
+.emoji-wrapper {
+  position: relative;
 }
 
 .char-count {
