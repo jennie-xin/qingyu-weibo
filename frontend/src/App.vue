@@ -4,6 +4,7 @@
     <main class="main-content" :class="{ 'full-width': isFullWidth }">
       <router-view />
     </main>
+    <Toast />
   </div>
 </template>
 
@@ -11,6 +12,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from './components/NavBar.vue'
+import Toast from './components/Toast.vue'
 
 const route = useRoute()
 
