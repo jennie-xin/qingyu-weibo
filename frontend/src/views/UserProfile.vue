@@ -46,6 +46,13 @@
         <p>还没有发布过轻语</p>
       </div>
     </div>
+
+    <EditProfileModal
+      :visible="showEdit"
+      :user="user"
+      @close="showEdit = false"
+      @updated="fetchUserData"
+    />
   </div>
 </template>
 
@@ -56,6 +63,7 @@ import { useUserStore } from '../stores/user'
 import { userApi, postApi, likeApi } from '../api'
 import PostCard from '../components/PostCard.vue'
 import LoadingDots from '../components/LoadingDots.vue'
+import EditProfileModal from '../components/EditProfileModal.vue'
 
 const route = useRoute()
 const userStore = useUserStore()

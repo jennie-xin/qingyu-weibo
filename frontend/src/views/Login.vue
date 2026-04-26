@@ -196,4 +196,20 @@ const handleLogin = async () => {
   background: #ffeaea;
   border-radius: var(--radius-sm);
 }
+
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+  }
+  .login-decor {
+    min-height: 180px;
+    padding: 32px;
+  }
+  .decor-title {
+    font-size: 1.8rem;
+  }
+  .login-form-wrapper {
+    padding: 32px 24px;
+  }
+}
 </style>
