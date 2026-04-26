@@ -5,6 +5,7 @@
       <router-view />
     </main>
     <Toast />
+    <BackToTop />
   </div>
 </template>
 
@@ -13,6 +14,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from './components/NavBar.vue'
 import Toast from './components/Toast.vue'
+import BackToTop from './components/BackToTop.vue'
 
 const route = useRoute()
 
