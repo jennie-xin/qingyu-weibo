@@ -74,7 +74,9 @@ const canDelete = computed(() => {
 
 const renderContent = (content) => {
   if (!content) return ''
-  return content.replace(/#([^#]+)#/g, '<a class="topic-tag" onclick="event.stopPropagation()">$&</a>')
+  return content.replace(/#([^#]+)#/g, (match, topic) => {
+    return `<a class="topic-tag" data-topic="${topic}" onclick="event.stopPropagation(); window.location.href='/topic/${encodeURIComponent(topic)}'">${match}</a>`
+  })
 }
 
 const goDetail = () => {

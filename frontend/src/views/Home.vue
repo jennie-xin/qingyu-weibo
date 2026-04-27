@@ -15,7 +15,9 @@
         </div>
 
         <div class="feed">
-          <LoadingDots v-if="postStore.loading" text="加载中..." />
+          <template v-if="postStore.loading">
+            <SkeletonCard v-for="i in 3" :key="i" />
+          </template>
           <template v-else-if="postStore.posts.length">
             <PostCard
               v-for="post in postStore.posts"
@@ -64,6 +66,7 @@ import PostCard from '../components/PostCard.vue'
 import PublishModal from '../components/PublishModal.vue'
 import LoadingDots from '../components/LoadingDots.vue'
 import HotTopics from '../components/HotTopics.vue'
+import SkeletonCard from '../components/SkeletonCard.vue'
 
 const postStore = usePostStore()
 const userStore = useUserStore()
