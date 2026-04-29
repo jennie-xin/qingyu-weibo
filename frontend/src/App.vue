@@ -4,6 +4,7 @@
     <main class="main-content" :class="{ 'full-width': isFullWidth }">
       <router-view />
     </main>
+    <AppFooter v-if="showNav" />
     <Toast />
     <BackToTop />
   </div>
@@ -13,6 +14,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from './components/NavBar.vue'
+import AppFooter from './components/AppFooter.vue'
 import Toast from './components/Toast.vue'
 import BackToTop from './components/BackToTop.vue'
 
