@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { notificationApi } from '../api'
@@ -53,6 +53,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const showMenu = ref(false)
 const unreadCount = ref(0)
+let pollTimer = null
 
 const initial = computed(() => {
   return (userStore.userInfo?.nickname || 'U').charAt(0).toUpperCase()
@@ -85,7 +86,12 @@ onMounted(() => {
   if (userStore.isLoggedIn) {
     userStore.fetchProfile()
     fetchUnread()
+    pollTimer = setInterval(fetchUnread, 30000)
   }
+})
+
+onUnmounted(() => {
+  if (pollTimer) clearInterval(pollTimer)
 })
 </script>
 
