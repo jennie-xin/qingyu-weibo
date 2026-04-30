@@ -39,14 +39,22 @@
         <span>{{ post.commentCount || '' }}</span>
       </button>
     </div>
+
+    <ImagePreview
+      :visible="showPreview"
+      :images="post.images || []"
+      :start-index="previewIndex"
+      @close="showPreview = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { formatTime } from '../utils/time'
 import { createLikeParticles } from '../utils/particles'
+import ImagePreview from './ImagePreview.vue'
 
 const props = defineProps({
   post: { type: Object, required: true },
@@ -56,6 +64,8 @@ const props = defineProps({
 
 const emit = defineEmits(['like', 'delete'])
 const router = useRouter()
+const showPreview = ref(false)
+const previewIndex = ref(0)
 
 const initial = computed(() => {
   return (props.post.nickname || 'U').charAt(0).toUpperCase()
@@ -97,7 +107,8 @@ const handleDelete = () => {
 }
 
 const previewImage = (index) => {
-  // 后面做图片预览弹窗
+  previewIndex.value = index
+  showPreview.value = true
 }
 </script>
 
