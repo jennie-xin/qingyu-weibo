@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -35,7 +35,7 @@ const props = defineProps({
   startIndex: { type: Number, default: 0 }
 })
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
 
 const currentIndex = ref(0)
 
@@ -44,7 +44,12 @@ watch(() => props.startIndex, (val) => {
 })
 
 watch(() => props.visible, (val) => {
-  if (val) currentIndex.value = props.startIndex
+  if (val) {
+    currentIndex.value = props.startIndex
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
 })
 
 const prev = () => {
@@ -54,6 +59,22 @@ const prev = () => {
 const next = () => {
   if (currentIndex.value < props.images.length - 1) currentIndex.value++
 }
+
+const handleKeydown = (e) => {
+  if (!props.visible) return
+  if (e.key === 'Escape') emit('close')
+  if (e.key === 'ArrowLeft') prev()
+  if (e.key === 'ArrowRight') next()
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+  document.body.style.overflow = ''
+})
 </script>
 
 <style>
