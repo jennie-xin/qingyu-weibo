@@ -1,5 +1,5 @@
 <template>
-  <div class="post-card" @click="goDetail">
+  <div class="post-card" @click="goDetail" @dblclick.stop="handleDblLike">
     <div class="post-card-header">
       <div class="post-avatar" :style="avatarStyle">
         <img v-if="post.avatar" :src="post.avatar" alt="" />
@@ -16,13 +16,16 @@
       </button>
     </div>
 
-    <div class="post-card-body">
+    <div class="post-card-body" style="position: relative;">
       <p class="post-content" v-html="renderContent(post.content)"></p>
       <div v-if="post.images && post.images.length" class="post-images" :class="'img-count-' + post.images.length">
         <div v-for="(img, i) in post.images" :key="i" class="post-img-wrapper" @click.stop="previewImage(i)">
           <img :src="img" alt="" loading="lazy" />
         </div>
       </div>
+      <svg v-if="showDblHeart" class="dbl-heart-anim" width="48" height="48" viewBox="0 0 24 24" fill="var(--color-primary)" stroke="none">
+        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+      </svg>
     </div>
 
     <div class="post-card-footer">
@@ -66,6 +69,7 @@ const emit = defineEmits(['like', 'delete'])
 const router = useRouter()
 const showPreview = ref(false)
 const previewIndex = ref(0)
+const showDblHeart = ref(false)
 
 const initial = computed(() => {
   return (props.post.nickname || 'U').charAt(0).toUpperCase()
@@ -91,6 +95,14 @@ const renderContent = (content) => {
 
 const goDetail = () => {
   router.push(`/post/${props.post.id}`)
+}
+
+const handleDblLike = (event) => {
+  if (props.post.liked) return
+  showDblHeart.value = true
+  setTimeout(() => { showDblHeart.value = false }, 800)
+  createLikeParticles(event)
+  emit('like', props.post.id)
 }
 
 const handleLike = (event) => {
@@ -292,5 +304,22 @@ const previewImage = (index) => {
   25% { transform: scale(1.3); }
   50% { transform: scale(0.9); }
   100% { transform: scale(1); }
+}
+
+.dbl-heart-anim {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: dblHeartPop 0.8s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+@keyframes dblHeartPop {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.9; }
+  30% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.9; }
+  60% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
 }
 </style>
