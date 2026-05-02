@@ -22,7 +22,7 @@
           <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
         </router-link>
 
-        <div class="nav-user-menu" @click="showMenu = !showMenu">
+        <div class="nav-user-menu" ref="menuRef" @click="showMenu = !showMenu">
           <div class="nav-avatar" :style="avatarStyle">
             <img v-if="userStore.userInfo?.avatar" :src="userStore.userInfo.avatar" alt="" />
             <span v-else class="nav-avatar-letter">{{ initial }}</span>
@@ -53,6 +53,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const showMenu = ref(false)
 const unreadCount = ref(0)
+const menuRef = ref(null)
 let pollTimer = null
 
 const initial = computed(() => {
@@ -82,16 +83,24 @@ const fetchUnread = async () => {
   }
 }
 
+const handleClickOutside = (e) => {
+  if (menuRef.value && !menuRef.value.contains(e.target)) {
+    showMenu.value = false
+  }
+}
+
 onMounted(() => {
   if (userStore.isLoggedIn) {
     userStore.fetchProfile()
     fetchUnread()
     pollTimer = setInterval(fetchUnread, 30000)
   }
+  document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
   if (pollTimer) clearInterval(pollTimer)
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
