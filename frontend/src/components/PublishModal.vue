@@ -81,6 +81,9 @@
 <script setup>
 import { ref, computed, nextTick } from 'vue'
 import EmojiPicker from './EmojiPicker.vue'
+import { useToast } from '../utils/toast'
+
+const toast = useToast()
 
 const props = defineProps({
   visible: { type: Boolean, default: false }
@@ -119,7 +122,12 @@ const autoResize = () => {
 const handleImageSelect = (e) => {
   const files = Array.from(e.target.files)
   if (images.value.length + files.length > 9) {
-    alert('最多上传9张图片')
+    toast.error('最多上传9张图片')
+    return
+  }
+  const oversized = files.find(f => f.size > 10 * 1024 * 1024)
+  if (oversized) {
+    toast.error('单张图片不能超过10MB')
     return
   }
   files.forEach(file => {
