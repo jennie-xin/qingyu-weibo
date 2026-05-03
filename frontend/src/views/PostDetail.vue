@@ -119,7 +119,9 @@ const getCommentAvatarStyle = (comment) => {
 
 const renderContent = (content) => {
   if (!content) return ''
-  return content.replace(/#([^#]+)#/g, '<a class="topic-tag">$&</a>')
+  return content.replace(/#([^#]+)#/g, (match, topic) => {
+    return `<a class="topic-tag" href="/topic/${encodeURIComponent(topic)}">${match}</a>`
+  })
 }
 
 const fetchData = async () => {
