@@ -49,10 +49,15 @@
             class="comment-input"
             placeholder="写下你的想法..."
             rows="2"
+            @keydown.ctrl.enter="submitComment"
           ></textarea>
-          <button class="btn-comment-submit" :disabled="!commentText.trim()" @click="submitComment">
-            发送
-          </button>
+          <div class="comment-input-footer">
+            <span class="comment-hint">Ctrl + Enter 发送</span>
+            <button class="btn-comment-submit" :disabled="!commentText.trim() || submitting" @click="submitComment">
+              <span v-if="submitting">发送中...</span>
+              <span v-else>发送</span>
+            </button>
+          </div>
         </div>
 
         <div class="comment-list">
@@ -92,6 +97,7 @@ const comments = ref([])
 const loading = ref(true)
 const commentText = ref('')
 const previewIndex = ref(-1)
+const submitting = ref(false)
 
 const initial = computed(() => {
   return (post.value?.nickname || 'U').charAt(0).toUpperCase()
@@ -144,7 +150,8 @@ const handleLike = async () => {
 }
 
 const submitComment = async () => {
-  if (!commentText.value.trim()) return
+  if (!commentText.value.trim() || submitting.value) return
+  submitting.value = true
   try {
     const res = await commentApi.create(post.value.id, { content: commentText.value })
     comments.value.unshift(res.data)
@@ -152,6 +159,8 @@ const submitComment = async () => {
     post.value.commentCount++
   } catch (e) {
     console.error('评论失败:', e)
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -324,8 +333,18 @@ onMounted(fetchData)
   color: var(--color-text-light);
 }
 
+.comment-input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.comment-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+}
+
 .btn-comment-submit {
-  float: right;
   padding: 8px 24px;
   background: var(--color-primary);
   color: white;
