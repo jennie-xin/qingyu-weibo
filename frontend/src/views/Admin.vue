@@ -15,6 +15,12 @@
     </div>
 
     <div v-if="activeTab === 'users'" class="admin-section">
+      <div class="admin-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input v-model="userSearch" class="search-input" placeholder="搜索用户名或昵称..." />
+      </div>
       <div class="admin-card">
         <table class="admin-table">
           <thead>
@@ -28,7 +34,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="user in users" :key="user.id">
+            <tr v-for="user in filteredUsers" :key="user.id">
               <td class="td-id">{{ user.id }}</td>
               <td class="td-username">{{ user.username }}</td>
               <td>{{ user.nickname }}</td>
@@ -53,8 +59,14 @@
     </div>
 
     <div v-if="activeTab === 'posts'" class="admin-section">
+      <div class="admin-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input v-model="postSearch" class="search-input" placeholder="搜索内容或作者..." />
+      </div>
       <div class="admin-card">
-        <div v-for="post in allPosts" :key="post.id" class="admin-post-item">
+        <div v-for="post in filteredPosts" :key="post.id" class="admin-post-item">
           <div class="admin-post-info">
             <span class="admin-post-author">{{ post.nickname }}</span>
             <p class="admin-post-content">{{ post.content.substring(0, 80) }}{{ post.content.length > 80 ? '...' : '' }}</p>
@@ -69,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { adminApi, postApi } from '../api'
 import { formatTime } from '../utils/time'
 
@@ -81,6 +93,26 @@ const tabs = [
 const activeTab = ref('users')
 const users = ref([])
 const allPosts = ref([])
+const userSearch = ref('')
+const postSearch = ref('')
+
+const filteredUsers = computed(() => {
+  if (!userSearch.value) return users.value
+  const keyword = userSearch.value.toLowerCase()
+  return users.value.filter(u =>
+    u.username.toLowerCase().includes(keyword) ||
+    (u.nickname || '').toLowerCase().includes(keyword)
+  )
+})
+
+const filteredPosts = computed(() => {
+  if (!postSearch.value) return allPosts.value
+  const keyword = postSearch.value.toLowerCase()
+  return allPosts.value.filter(p =>
+    p.content.toLowerCase().includes(keyword) ||
+    (p.nickname || '').toLowerCase().includes(keyword)
+  )
+})
 
 const fetchUsers = async () => {
   try {
@@ -165,6 +197,28 @@ onMounted(() => {
   border-radius: var(--radius-md);
   padding: 20px;
   box-shadow: var(--shadow-card);
+}
+
+.admin-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--color-card);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 16px;
+  color: var(--color-text-light);
+}
+
+.search-input {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-light);
 }
 
 .admin-table {
