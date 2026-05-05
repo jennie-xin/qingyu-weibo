@@ -88,5 +88,8 @@ export const adminApi = {
   },
   updateUserRole(id, role) {
     return api.put(`/admin/users/${id}/role`, { role })
+  },
+  updateUserStatus(id, status) {
+    return api.put(`/admin/users/${id}/status`, { status })
   }
 }

@@ -58,13 +58,18 @@
               </td>
               <td class="td-time">{{ formatTime(user.createdAt) }}</td>
               <td>
-                <button
-                  v-if="user.role !== 'admin'"
-                  class="btn-sm btn-promote"
-                  @click="promoteUser(user)"
-                >
-                  设为管理员
-                </button>
+                <div class="action-group" v-if="user.role !== 'admin'">
+                  <button class="btn-sm btn-promote" @click="promoteUser(user)">
+                    设为管理员
+                  </button>
+                  <button
+                    class="btn-sm"
+                    :class="user.status === 'banned' ? 'btn-unban' : 'btn-danger'"
+                    @click="toggleBan(user)"
+                  >
+                    {{ user.status === 'banned' ? '解封' : '封禁' }}
+                  </button>
+                </div>
                 <span v-else class="text-muted">-</span>
               </td>
             </tr>
@@ -157,6 +162,18 @@ const promoteUser = async (user) => {
   try {
     await adminApi.updateUserRole(user.id, 'admin')
     user.role = 'admin'
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const toggleBan = async (user) => {
+  const isBanned = user.status === 'banned'
+  const action = isBanned ? '解封' : '封禁'
+  if (!confirm(`确定${action}用户 ${user.nickname}？`)) return
+  try {
+    await adminApi.updateUserStatus(user.id, isBanned ? 'active' : 'banned')
+    user.status = isBanned ? 'active' : 'banned'
   } catch (e) {
     console.error(e)
   }
@@ -345,6 +362,20 @@ onMounted(() => {
 
 .btn-danger:hover {
   background: rgba(231, 76, 60, 0.2);
+}
+
+.btn-unban {
+  background: rgba(181, 234, 215, 0.3);
+  color: #27ae60;
+}
+
+.btn-unban:hover {
+  background: rgba(181, 234, 215, 0.5);
+}
+
+.action-group {
+  display: flex;
+  gap: 6px;
 }
 
 .admin-post-item {

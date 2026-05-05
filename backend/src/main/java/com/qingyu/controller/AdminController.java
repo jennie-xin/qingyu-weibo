@@ -61,6 +61,27 @@ public class AdminController {
         return Result.success();
     }
 
+    @PutMapping("/users/{id}/status")
+    public Result<Void> updateStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            HttpServletRequest request) {
+        if (!checkAdmin(request)) {
+            return Result.error(403, "无权限");
+        }
+        String status = body.get("status");
+        if (!"active".equals(status) && !"banned".equals(status)) {
+            return Result.error("状态值无效");
+        }
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        user.setStatus(status);
+        userMapper.updateById(user);
+        return Result.success();
+    }
+
     @DeleteMapping("/posts/{id}")
     public Result<Void> deletePost(@PathVariable Long id, HttpServletRequest request) {
         if (!checkAdmin(request)) {

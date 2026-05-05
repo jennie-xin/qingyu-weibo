@@ -31,6 +31,9 @@ public class AuthService {
         if (!hashPassword(password).equals(user.getPassword())) {
             throw new RuntimeException("密码错误");
         }
+        if ("banned".equals(user.getStatus())) {
+            throw new RuntimeException("账号已被封禁，请联系管理员");
+        }
         String token = jwtUtil.generateToken(user.getId(), user.getRole());
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
@@ -50,6 +53,7 @@ public class AuthService {
         user.setNickname(nickname);
         user.setPassword(hashPassword(password));
         user.setRole("user");
+        user.setStatus("active");
         user.setBio("");
         userMapper.insert(user);
         return sanitizeUser(user);

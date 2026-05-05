@@ -19,6 +19,7 @@ public class User {
     private String avatar;
     private String bio;
     private String role;
+    private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
