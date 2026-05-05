@@ -2,6 +2,21 @@
   <div class="admin-page">
     <h2 class="page-title">管理后台</h2>
 
+    <div class="admin-stats">
+      <div class="stat-card">
+        <span class="stat-num">{{ users.length }}</span>
+        <span class="stat-label">总用户</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">{{ allPosts.length }}</span>
+        <span class="stat-label">总微博</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">{{ todayPosts }}</span>
+        <span class="stat-label">今日发布</span>
+      </div>
+    </div>
+
     <div class="admin-tabs">
       <button
         v-for="tab in tabs"
@@ -114,6 +129,11 @@ const filteredPosts = computed(() => {
   )
 })
 
+const todayPosts = computed(() => {
+  const today = new Date().toDateString()
+  return allPosts.value.filter(p => new Date(p.createdAt).toDateString() === today).length
+})
+
 const fetchUsers = async () => {
   try {
     const res = await adminApi.getUsers()
@@ -161,6 +181,35 @@ onMounted(() => {
 <style>
 .admin-page {
   padding-top: 8px;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+}
+
+.stat-num {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-primary);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+  margin-top: 4px;
 }
 
 .admin-tabs {
