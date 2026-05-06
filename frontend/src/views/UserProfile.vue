@@ -11,6 +11,12 @@
           <h2 class="profile-name">{{ user.nickname || '加载中...' }}</h2>
           <p class="profile-username">@{{ user.username }}</p>
           <p class="profile-bio">{{ user.bio || '这个人很懒，什么都没写' }}</p>
+          <p v-if="user.createdAt" class="profile-joined">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+            {{ joinDate }} 加入
+          </p>
         </div>
         <button v-if="isOwner" class="btn-edit-profile" @click="showEdit = true">
           编辑资料
@@ -89,6 +95,12 @@ const avatarBg = computed(() => {
   const colors = ['#F2A7B0', '#A8D8EA', '#C3B1E1', '#B5EAD7', '#FFEAA7']
   const index = (user.value.id || 0) % colors.length
   return { background: colors[index] }
+})
+
+const joinDate = computed(() => {
+  if (!user.value.createdAt) return ''
+  const d = new Date(user.value.createdAt)
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
 })
 
 const fetchUserData = async () => {
@@ -208,6 +220,15 @@ watch(() => route.params.id, fetchUserData)
   color: var(--color-text);
 }
 
+.profile-joined {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+}
+
 .btn-edit-profile {
   padding: 8px 20px;
   border: 1.5px solid var(--color-border);
@@ -258,5 +279,27 @@ watch(() => route.params.id, fetchUserData)
   text-align: center;
   padding: 40px 0;
   color: var(--color-text-light);
+}
+
+@media (max-width: 768px) {
+  .profile-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 16px;
+    margin-top: -36px;
+  }
+
+  .profile-details {
+    padding-top: 8px;
+  }
+
+  .profile-stats {
+    justify-content: center;
+  }
+
+  .btn-edit-profile {
+    margin-top: 12px;
+  }
 }
 </style>
