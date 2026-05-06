@@ -420,4 +420,42 @@ onMounted(() => {
 .text-muted {
   color: var(--color-text-light);
 }
+
+@media (max-width: 768px) {
+  .admin-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 12px 8px;
+  }
+
+  .stat-num {
+    font-size: 1.2rem;
+  }
+
+  .admin-table {
+    font-size: 0.75rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 4px;
+  }
+
+  .td-time {
+    display: none;
+  }
+
+  .action-group {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .btn-sm {
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+}
 </style>
