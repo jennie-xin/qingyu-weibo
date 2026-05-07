@@ -29,7 +29,10 @@
               @delete="handleDelete"
             />
             <div v-if="postStore.hasMore" class="load-more">
-              <button class="btn-load-more" @click="loadMore">加载更多</button>
+              <button class="btn-load-more" :disabled="loadingMore" @click="loadMore">
+                <span v-if="loadingMore" class="loading-dots-sm"><i></i><i></i><i></i></span>
+                <span v-else>加载更多</span>
+              </button>
             </div>
             <p v-else class="feed-end">没有更多了 ~</p>
           </template>
@@ -71,13 +74,16 @@ import SkeletonCard from '../components/SkeletonCard.vue'
 const postStore = usePostStore()
 const userStore = useUserStore()
 const showPublish = ref(false)
+const loadingMore = ref(false)
 
 onMounted(() => {
   postStore.fetchPosts(1)
 })
 
-const loadMore = () => {
-  postStore.fetchPosts(postStore.currentPage + 1)
+const loadMore = async () => {
+  loadingMore.value = true
+  await postStore.fetchPosts(postStore.currentPage + 1)
+  loadingMore.value = false
 }
 
 const handleLike = async (postId) => {
@@ -250,5 +256,27 @@ const handlePublish = async ({ content, images }) => {
   padding: 20px 0;
   font-size: 0.85rem;
   color: var(--color-text-light);
+}
+
+.loading-dots-sm {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.loading-dots-sm i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-text-light);
+  animation: dotBounce 0.6s infinite alternate;
+}
+
+.loading-dots-sm i:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots-sm i:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-3px); }
 }
 </style>
