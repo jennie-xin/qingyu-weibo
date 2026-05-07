@@ -1,6 +1,11 @@
 <template>
   <div class="notifications-page">
-    <h2 class="page-title">通知</h2>
+    <div class="notif-header">
+      <h2 class="page-title">通知</h2>
+      <button v-if="unreadCount > 0" class="btn-mark-all" @click="markAllRead">
+        全部已读
+      </button>
+    </div>
 
     <div class="notif-tabs">
       <button
@@ -76,6 +81,10 @@ const filteredList = computed(() => {
   return notifications.value.filter(n => n.type === activeTab.value)
 })
 
+const unreadCount = computed(() => {
+  return notifications.value.filter(n => !n.isRead).length
+})
+
 const getAvatarStyle = (item) => {
   const colors = ['#F2A7B0', '#A8D8EA', '#C3B1E1', '#B5EAD7', '#FFEAA7']
   const index = (item.fromUserId || 0) % colors.length
@@ -96,6 +105,15 @@ const handleClick = async (item) => {
   }
 }
 
+const markAllRead = async () => {
+  try {
+    await notificationApi.markAllRead()
+    notifications.value.forEach(n => { n.isRead = 1 })
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 onMounted(async () => {
   try {
     const res = await notificationApi.getList()
@@ -112,7 +130,27 @@ onMounted(async () => {
 .page-title {
   font-size: 1.3rem;
   font-weight: 700;
+  margin-bottom: 0;
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 20px;
+}
+
+.btn-mark-all {
+  padding: 6px 14px;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  background: rgba(168, 216, 234, 0.15);
+  color: var(--color-blue);
+  font-weight: 500;
+}
+
+.btn-mark-all:hover {
+  background: rgba(168, 216, 234, 0.3);
 }
 
 .notif-tabs {

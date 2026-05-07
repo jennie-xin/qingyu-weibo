@@ -1,6 +1,7 @@
 package com.qingyu.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.qingyu.entity.Notification;
 import com.qingyu.entity.User;
 import com.qingyu.mapper.NotificationMapper;
@@ -65,5 +66,13 @@ public class NotificationService {
             n.setIsRead(1);
             notificationMapper.updateById(n);
         }
+    }
+
+    public void markAllRead(Long userId) {
+        Notification update = new Notification();
+        update.setIsRead(1);
+        UpdateWrapper<Notification> wrapper = new UpdateWrapper<>();
+        wrapper.eq("user_id", userId).eq("is_read", 0);
+        notificationMapper.update(update, wrapper);
     }
 }

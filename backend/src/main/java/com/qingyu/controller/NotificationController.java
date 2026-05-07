@@ -35,4 +35,14 @@ public class NotificationController {
         notificationService.markRead(id, userId);
         return Result.success();
     }
+
+    @PutMapping("/read-all")
+    public Result<Void> markAllRead(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return Result.error(401, "请先登录");
+        }
+        notificationService.markAllRead(userId);
+        return Result.success();
+    }
 }

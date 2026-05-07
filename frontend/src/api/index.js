@@ -76,6 +76,9 @@ export const notificationApi = {
   },
   markRead(id) {
     return api.put(`/notifications/${id}/read`)
+  },
+  markAllRead() {
+    return api.put('/notifications/read-all')
   }
 }
 
