@@ -98,3 +98,27 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-light);
 }
+
+[data-theme="dark"] {
+  --color-bg: #1A1A2E;
+  --color-card: #25253E;
+  --color-primary: #F2A7B0;
+  --color-blue: #A8D8EA;
+  --color-purple: #C3B1E1;
+  --color-green: #B5EAD7;
+  --color-yellow: #FFEAA7;
+  --color-text: #E8E8E8;
+  --color-text-light: #9A9AB0;
+  --color-border: #3A3A52;
+  --color-hover: #2E2E48;
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.2);
+  --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .navbar {
+  background: rgba(26, 26, 46, 0.9);
+}
+
+[data-theme="dark"] .post-delete:hover {
+  background: rgba(231, 76, 60, 0.15);
+}
