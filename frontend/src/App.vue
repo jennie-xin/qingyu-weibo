@@ -2,7 +2,11 @@
   <div class="app">
     <NavBar v-if="showNav" />
     <main class="main-content" :class="{ 'full-width': isFullWidth }">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <transition name="page-fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
     <AppFooter v-if="showNav" />
     <Toast />
@@ -44,5 +48,15 @@ const isFullWidth = computed(() => {
 .main-content.full-width {
   max-width: none;
   padding: 0;
+}
+
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
 }
 </style>
