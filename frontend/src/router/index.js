@@ -42,6 +42,11 @@ const routes = [
     name: 'Notifications',
     component: () => import('../views/Notifications.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFound.vue')
   }
 ]
 
