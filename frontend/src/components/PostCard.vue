@@ -1,5 +1,5 @@
 <template>
-  <div class="post-card" @click="goDetail" @dblclick.stop="handleDblLike">
+  <div class="post-card" @click="handleClick" @dblclick.stop="handleDblLike">
     <div class="post-card-header">
       <div class="post-avatar" :style="avatarStyle">
         <img v-if="post.avatar" :src="post.avatar" alt="" />
@@ -70,6 +70,7 @@ const router = useRouter()
 const showPreview = ref(false)
 const previewIndex = ref(0)
 const showDblHeart = ref(false)
+let clickTimer = null
 
 const initial = computed(() => {
   return (props.post.nickname || 'U').charAt(0).toUpperCase()
@@ -98,11 +99,22 @@ const goDetail = () => {
 }
 
 const handleDblLike = (event) => {
+  if (clickTimer) {
+    clearTimeout(clickTimer)
+    clickTimer = null
+  }
   if (props.post.liked) return
   showDblHeart.value = true
   setTimeout(() => { showDblHeart.value = false }, 800)
   createLikeParticles(event)
   emit('like', props.post.id)
+}
+
+const handleClick = () => {
+  if (clickTimer) clearTimeout(clickTimer)
+  clickTimer = setTimeout(() => {
+    goDetail()
+  }, 250)
 }
 
 const handleLike = (event) => {
