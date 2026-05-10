@@ -133,6 +133,9 @@ const fetchData = async () => {
       commentApi.getList(postId)
     ])
     post.value = postRes.data
+    if (post.value.images && typeof post.value.images === 'string') {
+      try { post.value.images = JSON.parse(post.value.images) } catch (e) { post.value.images = null }
+    }
     comments.value = commentRes.data
   } catch (e) {
     console.error('加载失败:', e)
@@ -145,7 +148,7 @@ const handleLike = async () => {
   try {
     const res = await likeApi.toggle(post.value.id)
     post.value.liked = res.data.liked
-    post.value.likeCount += res.data.liked ? 1 : -1
+    post.value.likeCount = res.data.likeCount
   } catch (e) {
     console.error(e)
   }
@@ -289,6 +292,7 @@ onMounted(fetchData)
   background: transparent;
   color: var(--color-text-light);
   font-size: 0.9rem;
+  transition: background 0.3s ease;
 }
 
 .action-btn-lg:hover {
@@ -297,6 +301,14 @@ onMounted(fetchData)
 
 .action-btn-lg.active {
   color: var(--color-primary);
+}
+
+.action-btn-lg svg {
+  transition: none;
+}
+
+.action-btn-lg svg path {
+  transition: none;
 }
 
 .action-divider {

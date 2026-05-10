@@ -1,4 +1,4 @@
-const COLORS = ['#F2A7B0', '#A8D8EA', '#C3B1E1', '#B5EAD7', '#FFEAA7']
+const COLORS = ['#F2A7B0', '#A8D8EA', '#C3B1E1', '#B5EAD7', '#FFEAA7', '#FFB7B2', '#FF6B6B']
 
 export const createLikeParticles = (event) => {
   const btn = event.currentTarget
@@ -6,7 +6,7 @@ export const createLikeParticles = (event) => {
   const x = rect.left + rect.width / 2
   const y = rect.top + rect.height / 2
 
-  const particleCount = 12
+  const particleCount = 18
   const container = document.createElement('div')
   container.style.cssText = `
     position: fixed;
@@ -17,13 +17,16 @@ export const createLikeParticles = (event) => {
   `
   document.body.appendChild(container)
 
+  const styleEl = document.createElement('style')
+  let keyframes = ''
+
   for (let i = 0; i < particleCount; i++) {
     const particle = document.createElement('span')
-    const angle = (360 / particleCount) * i
-    const distance = 20 + Math.random() * 30
-    const size = 4 + Math.random() * 6
+    const angle = (360 / particleCount) * i + (Math.random() - 0.5) * 20
+    const distance = 35 + Math.random() * 50
+    const size = 5 + Math.random() * 8
     const color = COLORS[Math.floor(Math.random() * COLORS.length)]
-    const duration = 0.4 + Math.random() * 0.3
+    const duration = 0.5 + Math.random() * 0.4
 
     particle.style.cssText = `
       position: absolute;
@@ -33,6 +36,7 @@ export const createLikeParticles = (event) => {
       background: ${color};
       left: 0;
       top: 0;
+      opacity: 0;
       transform: translate(-50%, -50%);
       animation: particle-fly-${i} ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     `
@@ -41,12 +45,14 @@ export const createLikeParticles = (event) => {
     const tx = Math.cos(radians) * distance
     const ty = Math.sin(radians) * distance
 
-    const style = document.createElement('style')
-    style.textContent = `
+    keyframes += `
       @keyframes particle-fly-${i} {
         0% {
           transform: translate(-50%, -50%) scale(1);
           opacity: 1;
+        }
+        60% {
+          opacity: 0.8;
         }
         100% {
           transform: translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0);
@@ -54,21 +60,14 @@ export const createLikeParticles = (event) => {
         }
       }
     `
-    document.head.appendChild(style)
     container.appendChild(particle)
-
-    setTimeout(() => {
-      style.remove()
-    }, duration * 1000 + 100)
   }
+
+  styleEl.textContent = keyframes
+  document.head.appendChild(styleEl)
 
   setTimeout(() => {
     container.remove()
-  }, 800)
-}
-
-export const heartBeatAnimation = (element) => {
-  element.style.animation = 'none'
-  element.offsetHeight
-  element.style.animation = 'heartBeat 0.4s ease'
+    styleEl.remove()
+  }, 1000)
 }

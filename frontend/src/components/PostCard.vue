@@ -295,6 +295,7 @@ const previewImage = (index) => {
   color: var(--color-text-light);
   background: transparent;
   font-size: 0.85rem;
+  transition: background 0.3s ease;
 }
 
 .action-btn:hover {
@@ -307,15 +308,16 @@ const previewImage = (index) => {
   font-weight: 600;
 }
 
-.like-btn.is-liked .like-icon {
-  animation: heartBeat 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+.like-btn.is-liked {
+  color: var(--color-primary);
 }
 
-@keyframes heartBeat {
-  0% { transform: scale(1); }
-  25% { transform: scale(1.3); }
-  50% { transform: scale(0.9); }
-  100% { transform: scale(1); }
+.like-icon {
+  transition: none !important;
+}
+
+.like-icon path {
+  transition: none !important;
 }
 
 .dbl-heart-anim {
