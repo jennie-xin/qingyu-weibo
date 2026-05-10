@@ -212,4 +212,17 @@ const handleLogin = async () => {
     padding: 32px 24px;
   }
 }
+
+[data-theme="dark"] .login-form-wrapper {
+  background: var(--color-card);
+}
+
+[data-theme="dark"] .form-group input {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .form-error {
+  background: rgba(231, 76, 60, 0.15);
+}
 </style>
