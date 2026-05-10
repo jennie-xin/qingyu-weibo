@@ -1,5 +1,12 @@
 <template>
   <div class="topic-page">
+    <button class="btn-back" @click="$router.back()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>返回</span>
+    </button>
+
     <div class="topic-header">
       <div class="topic-icon">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-purple)" stroke-width="1.8">
@@ -74,6 +81,23 @@ watch(() => route.params.name, fetchTopic)
 <style>
 .topic-page {
   padding-top: 8px;
+}
+
+.topic-page .btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-light);
+  background: transparent;
+  font-size: 0.9rem;
+}
+
+.topic-page .btn-back:hover {
+  color: var(--color-text);
+  background: var(--color-card);
 }
 
 .topic-header {
