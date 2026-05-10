@@ -6,6 +6,18 @@
         轻语
       </router-link>
 
+      <div class="navbar-search">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="搜索轻语..."
+          @keydown.enter="handleSearch"
+        />
+      </div>
+
       <div class="navbar-actions" v-if="userStore.isLoggedIn">
         <button class="nav-icon" title="切换主题" @click="toggleTheme">
           <svg v-if="!isDark" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -72,6 +84,7 @@ const showMenu = ref(false)
 const unreadCount = ref(0)
 const menuRef = ref(null)
 const isDark = ref(localStorage.getItem('theme') === 'dark')
+const searchQuery = ref('')
 let pollTimer = null
 
 const initial = computed(() => {
@@ -89,6 +102,13 @@ const handleLogout = () => {
   userStore.logout()
   showMenu.value = false
   router.push('/login')
+}
+
+const handleSearch = () => {
+  const q = searchQuery.value.trim()
+  if (!q) return
+  router.push(`/search?q=${encodeURIComponent(q)}`)
+  searchQuery.value = ''
 }
 
 const toggleTheme = () => {
@@ -143,7 +163,7 @@ onUnmounted(() => {
 }
 
 .navbar-inner {
-  max-width: 800px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 12px 16px;
   display: flex;
@@ -153,21 +173,55 @@ onUnmounted(() => {
 
 .navbar-brand {
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--color-text);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .navbar-brand:hover {
   color: var(--color-primary);
 }
 
+.navbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  flex: 1;
+  max-width: 320px;
+  transition: var(--transition);
+}
+
+.navbar-search:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(242, 167, 176, 0.1);
+}
+
+.search-icon {
+  color: var(--color-text-light);
+  flex-shrink: 0;
+}
+
+.navbar-search input {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  background: transparent;
+}
+
+.navbar-search input::placeholder {
+  color: var(--color-text-light);
+}
+
 .brand-dot {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--color-primary), var(--color-purple));
 }

@@ -53,6 +53,8 @@ public class PostService {
         if (post == null) {
             throw new RuntimeException("微博不存在");
         }
+        postMapper.incrementViewCount(postId);
+        post.setViewCount(post.getViewCount() == null ? 1 : post.getViewCount() + 1);
         return enrichPost(post, currentUserId);
     }
 
@@ -88,6 +90,25 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    public List<Map<String, Object>> getLikedByUserId(Long userId, Long currentUserId) {
+        QueryWrapper<com.qingyu.entity.Like> likeQuery = new QueryWrapper<>();
+        likeQuery.eq("user_id", userId).orderByDesc("created_at");
+        List<com.qingyu.entity.Like> likes = likeMapper.selectList(likeQuery);
+
+        List<Long> postIds = likes.stream()
+                .map(com.qingyu.entity.Like::getPostId)
+                .collect(Collectors.toList());
+
+        if (postIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Post> posts = postMapper.selectBatchIds(postIds);
+        return posts.stream()
+                .map(post -> enrichPost(post, currentUserId))
+                .collect(Collectors.toList());
+    }
+
     private Map<String, Object> enrichPost(Post post, Long currentUserId) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", post.getId());
@@ -95,6 +116,7 @@ public class PostService {
         map.put("content", post.getContent());
         map.put("likeCount", post.getLikeCount());
         map.put("commentCount", post.getCommentCount());
+        map.put("viewCount", post.getViewCount() != null ? post.getViewCount() : 0);
         map.put("createdAt", post.getCreatedAt());
 
         if (post.getImages() != null && !post.getImages().isEmpty()) {

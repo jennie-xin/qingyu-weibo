@@ -54,9 +54,24 @@ public class TopicService {
     }
 
     public List<Topic> getHotTopics() {
-        QueryWrapper<Topic> query = new QueryWrapper<>();
-        query.orderByDesc("post_count").last("LIMIT 10");
-        return topicMapper.selectList(query);
+        List<Topic> allTopics = topicMapper.selectList(
+            new QueryWrapper<Topic>().gt("post_count", 0)
+        );
+
+        allTopics.forEach(topic -> {
+            List<Post> topicPosts = postMapper.selectList(
+                new QueryWrapper<Post>().like("content", "#" + topic.getName() + "#")
+            );
+            int heat = topicPosts.stream()
+                .mapToInt(p -> (p.getViewCount() != null ? p.getViewCount() : 0)
+                    + (p.getLikeCount() != null ? p.getLikeCount() : 0) * 2
+                    + (p.getCommentCount() != null ? p.getCommentCount() : 0) * 3)
+                .sum();
+            topic.setPostCount(heat);
+        });
+
+        allTopics.sort((a, b) -> b.getPostCount() - a.getPostCount());
+        return allTopics.stream().limit(10).collect(Collectors.toList());
     }
 
     public List<Map<String, Object>> getPostsByTopic(String topicName) {

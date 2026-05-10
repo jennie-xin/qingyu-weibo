@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(128) NOT NULL COMMENT '加密后的密码',
     nickname VARCHAR(32) NOT NULL COMMENT '显示昵称',
     avatar VARCHAR(256) DEFAULT NULL COMMENT '头像URL，null则用生成的默认头像',
+    cover VARCHAR(256) DEFAULT NULL COMMENT '个人主页封面图URL',
     bio VARCHAR(200) DEFAULT '' COMMENT '个人简介',
     role VARCHAR(16) DEFAULT 'user' COMMENT 'user/admin',
     status VARCHAR(16) DEFAULT 'active' COMMENT 'active/banned',
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS posts (
     images VARCHAR(1024) DEFAULT NULL COMMENT '图片URL列表，JSON数组格式',
     like_count INT DEFAULT 0 COMMENT '点赞数冗余',
     comment_count INT DEFAULT 0 COMMENT '评论数冗余',
+    view_count INT DEFAULT 0 COMMENT '浏览量',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -84,6 +86,13 @@ CREATE TABLE IF NOT EXISTS notifications (
     FOREIGN KEY (from_user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 插入一个默认管理员账号 密码是 admin123 (后端会用BCrypt加密，这里先放明文占位)
-INSERT INTO users (username, password, nickname, role) VALUES
-('admin', '$2a$10$placeholder', '管理员小轻', 'admin');
+-- 插入一个默认管理员账号（由 data-seed.sql 统一管理，此处不再插入）
+
+-- 搜索日志表
+CREATE TABLE IF NOT EXISTS search_logs (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    keyword VARCHAR(64) NOT NULL COMMENT '搜索关键词',
+    user_id BIGINT DEFAULT NULL COMMENT '搜索用户ID，未登录为null',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_keyword_time (keyword, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

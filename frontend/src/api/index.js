@@ -52,9 +52,18 @@ export const uploadApi = {
   }
 }
 
+export const imageApi = {
+  search(keyword, count = 6) {
+    return api.get('/images/search', { params: { keyword, count } })
+  }
+}
+
 export const userApi = {
   getInfo(id) {
     return api.get(`/users/${id}`)
+  },
+  getLikedPosts(id) {
+    return api.get(`/users/${id}/liked`)
   },
   updateProfile(data) {
     return api.put('/users/profile', data)
@@ -67,6 +76,15 @@ export const topicApi = {
   },
   getPosts(name) {
     return api.get(`/topics/${name}`)
+  }
+}
+
+export const searchApi = {
+  search(q) {
+    return api.get('/search', { params: { q } })
+  },
+  getHot() {
+    return api.get('/search/hot')
   }
 }
 
