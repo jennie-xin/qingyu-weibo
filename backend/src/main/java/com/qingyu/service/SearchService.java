@@ -74,6 +74,10 @@ public class SearchService {
     }
 
     public List<Map<String, Object>> getHotSearches() {
-        return searchLogMapper.getHotSearches();
+        List<Map<String, Object>> hot = searchLogMapper.getHotSearches();
+        if (hot == null || hot.isEmpty()) {
+            hot = searchLogMapper.getAllTimeHotSearches();
+        }
+        return hot;
     }
 }

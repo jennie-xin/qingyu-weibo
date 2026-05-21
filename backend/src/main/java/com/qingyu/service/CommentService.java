@@ -41,6 +41,7 @@ public class CommentService {
             map.put("postId", comment.getPostId());
             map.put("userId", comment.getUserId());
             map.put("content", comment.getContent());
+            map.put("images", comment.getImages());
             map.put("createdAt", comment.getCreatedAt());
 
             User user = userMapper.selectById(comment.getUserId());
@@ -52,11 +53,12 @@ public class CommentService {
         }).collect(Collectors.toList());
     }
 
-    public Map<String, Object> create(Long postId, Long userId, String content) {
+    public Map<String, Object> create(Long postId, Long userId, String content, String images) {
         Comment comment = new Comment();
         comment.setPostId(postId);
         comment.setUserId(userId);
         comment.setContent(content);
+        comment.setImages(images);
         commentMapper.insert(comment);
 
         Post post = postMapper.selectById(postId);
@@ -71,6 +73,7 @@ public class CommentService {
         map.put("postId", postId);
         map.put("userId", userId);
         map.put("content", content);
+        map.put("images", images);
         map.put("createdAt", comment.getCreatedAt());
 
         User user = userMapper.selectById(userId);

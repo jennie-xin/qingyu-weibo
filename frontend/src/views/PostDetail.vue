@@ -20,6 +20,17 @@
             <router-link :to="`/user/${post.userId}`" class="detail-nickname">{{ post.nickname }}</router-link>
             <span class="detail-time">{{ formatTime(post.createdAt) }}</span>
           </div>
+          <button v-if="canEdit" class="post-edit" @click="handleEdit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button v-if="canDelete" class="post-delete" @click="showDeleteConfirm = true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            </svg>
+          </button>
         </div>
 
         <div class="detail-content">
@@ -27,7 +38,7 @@
         </div>
 
         <div v-if="post.images && post.images.length" class="detail-images">
-          <img v-for="(img, i) in post.images" :key="i" :src="img" alt="" @click="previewIndex = i" />
+          <img v-for="(img, i) in post.images" :key="i" :src="img" alt="" @click="previewImage = img" />
         </div>
 
         <div class="detail-actions">
@@ -51,9 +62,30 @@
             rows="2"
             @keydown.ctrl.enter="submitComment"
           ></textarea>
+          <div v-if="commentImages.length" class="comment-image-preview">
+            <div v-for="(img, i) in commentImages" :key="i" class="comment-preview-item">
+              <img :src="img.url" alt="" />
+              <button class="comment-remove-img" @click="removeCommentImage(i)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" fill="rgba(0,0,0,0.5)" stroke="none"/>
+                  <path d="M15 9l-6 6M9 9l6 6" stroke="white" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
           <div class="comment-input-footer">
-            <span class="comment-hint">Ctrl + Enter 发送</span>
-            <button class="btn-comment-submit" :disabled="!commentText.trim() || submitting" @click="submitComment">
+            <div class="comment-footer-left">
+              <label class="comment-img-btn" title="添加图片">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <rect x="3" y="3" width="18" height="18" rx="4"/>
+                  <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+                  <path d="M21 15l-5-5L5 21" stroke-linecap="round"/>
+                </svg>
+                <input type="file" accept="image/*" multiple hidden @change="handleCommentImageSelect" />
+              </label>
+              <span class="comment-hint">Ctrl + Enter 发送</span>
+            </div>
+            <button class="btn-comment-submit" :disabled="!canSubmitComment || submitting" @click="submitComment">
               <span v-if="submitting">发送中...</span>
               <span v-else>发送</span>
             </button>
@@ -72,32 +104,58 @@
                 <span class="comment-time">{{ formatTime(comment.createdAt) }}</span>
               </div>
               <p class="comment-text">{{ comment.content }}</p>
+              <div v-if="comment.parsedImages && comment.parsedImages.length" class="comment-images">
+                <img v-for="(img, i) in comment.parsedImages" :key="i" :src="img" alt="" @click="previewImage = img" />
+              </div>
             </div>
           </div>
           <p v-if="!comments.length" class="no-comments">还没有评论，来说两句吧</p>
         </div>
       </div>
     </template>
+
+    <ConfirmDialog
+      :visible="showDeleteConfirm"
+      message="确认删除这条微博吗？"
+      @confirm="confirmDelete"
+      @cancel="showDeleteConfirm = false"
+    />
+
+    <Teleport to="body">
+      <div v-if="previewImage" class="image-lightbox" @click="previewImage = null">
+        <img :src="previewImage" alt="" @click.stop />
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, inject } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { postApi, commentApi, likeApi } from '../api'
 import { formatTime } from '../utils/time'
 import LoadingDots from '../components/LoadingDots.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
+const openEdit = inject('openEdit')
 
 const post = ref(null)
 const comments = ref([])
 const loading = ref(true)
 const commentText = ref('')
+const commentImages = ref([])
 const previewIndex = ref(-1)
+const previewImage = ref(null)
 const submitting = ref(false)
+const showDeleteConfirm = ref(false)
+
+const canSubmitComment = computed(() => {
+  return commentText.value.trim().length > 0 || commentImages.value.length > 0
+})
 
 const initial = computed(() => {
   return (post.value?.nickname || 'U').charAt(0).toUpperCase()
@@ -136,12 +194,39 @@ const fetchData = async () => {
     if (post.value.images && typeof post.value.images === 'string') {
       try { post.value.images = JSON.parse(post.value.images) } catch (e) { post.value.images = null }
     }
-    comments.value = commentRes.data
+    comments.value = (commentRes.data || []).map(parseCommentImages)
   } catch (e) {
     console.error('加载失败:', e)
   } finally {
     loading.value = false
   }
+}
+
+const parseCommentImages = (comment) => {
+  let parsedImages = null
+  if (comment.images) {
+    try {
+      parsedImages = typeof comment.images === 'string' ? JSON.parse(comment.images) : comment.images
+    } catch (e) { parsedImages = null }
+  }
+  return { ...comment, parsedImages }
+}
+
+const handleCommentImageSelect = (e) => {
+  const files = Array.from(e.target.files)
+  if (commentImages.value.length + files.length > 3) {
+    return
+  }
+  files.forEach(file => {
+    if (file.size > 10 * 1024 * 1024) return
+    commentImages.value.push({ file, url: URL.createObjectURL(file) })
+  })
+  e.target.value = ''
+}
+
+const removeCommentImage = (index) => {
+  URL.revokeObjectURL(commentImages.value[index].url)
+  commentImages.value.splice(index, 1)
 }
 
 const handleLike = async () => {
@@ -155,17 +240,45 @@ const handleLike = async () => {
 }
 
 const submitComment = async () => {
-  if (!commentText.value.trim() || submitting.value) return
+  if (!canSubmitComment.value || submitting.value) return
   submitting.value = true
   try {
-    const res = await commentApi.create(post.value.id, { content: commentText.value })
-    comments.value.unshift(res.data)
+    const imageFiles = commentImages.value.map(img => img.file)
+    const res = await commentApi.create(post.value.id, {
+      content: commentText.value,
+      images: imageFiles
+    })
+    comments.value.unshift(parseCommentImages(res.data))
     commentText.value = ''
+    commentImages.value.forEach(img => URL.revokeObjectURL(img.url))
+    commentImages.value = []
     post.value.commentCount++
   } catch (e) {
     console.error('评论失败:', e)
   } finally {
     submitting.value = false
+  }
+}
+
+const canEdit = computed(() => {
+  return post.value && post.value.userId === userStore.userInfo?.id
+})
+
+const canDelete = computed(() => {
+  return post.value && (post.value.userId === userStore.userInfo?.id || userStore.isAdmin)
+})
+
+const handleEdit = () => {
+  openEdit(post.value)
+}
+
+const confirmDelete = async () => {
+  showDeleteConfirm.value = false
+  try {
+    await postApi.remove(post.value.id)
+    router.back()
+  } catch (e) {
+    console.error('删除失败:', e)
   }
 }
 
@@ -353,6 +466,74 @@ onMounted(fetchData)
   justify-content: space-between;
 }
 
+.comment-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comment-img-btn {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-light);
+  cursor: pointer;
+}
+
+.comment-img-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-hover);
+}
+
+.comment-image-preview {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.comment-preview-item {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.comment-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comment-remove-img {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: transparent;
+  padding: 2px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.comment-images {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.comment-images img {
+  max-width: 120px;
+  max-height: 90px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.comment-images img:hover {
+  opacity: 0.9;
+}
+
 .comment-hint {
   font-size: 0.75rem;
   color: var(--color-text-light);
@@ -451,5 +632,26 @@ onMounted(fetchData)
   padding: 24px 0;
   color: var(--color-text-light);
   font-size: 0.9rem;
+}
+
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: pointer;
+  animation: fadeIn 0.2s ease;
+}
+
+.image-lightbox img {
+  max-width: 60vw;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  cursor: default;
 }
 </style>

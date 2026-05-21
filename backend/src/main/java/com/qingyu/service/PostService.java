@@ -78,7 +78,23 @@ public class PostService {
         if (!post.getUserId().equals(userId) && !"admin".equals(role)) {
             throw new RuntimeException("没有权限删除");
         }
+        topicService.decrementTopics(post.getContent());
         postMapper.deleteById(postId);
+    }
+
+    public Map<String, Object> update(Long postId, Long userId, String role, String content, String images) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new RuntimeException("微博不存在");
+        }
+        if (!post.getUserId().equals(userId) && !"admin".equals(role)) {
+            throw new RuntimeException("没有权限编辑");
+        }
+        post.setContent(content);
+        post.setImages(images);
+        postMapper.updateById(post);
+        topicService.extractAndSaveTopics(content, post.getId());
+        return enrichPost(post, userId);
     }
 
     public List<Map<String, Object>> getByUserId(Long userId, Long currentUserId) {

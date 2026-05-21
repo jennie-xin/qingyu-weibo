@@ -9,6 +9,12 @@
         <span class="post-nickname">{{ post.nickname }}</span>
         <span class="post-time">{{ formatTime(post.createdAt) }}</span>
       </div>
+      <button v-if="canEdit" class="post-edit" @click.stop="handleEdit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </button>
       <button v-if="canDelete" class="post-delete" @click.stop="handleDelete">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
@@ -49,6 +55,13 @@
       :start-index="previewIndex"
       @close="showPreview = false"
     />
+
+    <ConfirmDialog
+      :visible="showDeleteConfirm"
+      message="确认删除这条微博吗？"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
@@ -58,6 +71,7 @@ import { useRouter } from 'vue-router'
 import { formatTime } from '../utils/time'
 import { createLikeParticles } from '../utils/particles'
 import ImagePreview from './ImagePreview.vue'
+import ConfirmDialog from './ConfirmDialog.vue'
 
 const props = defineProps({
   post: { type: Object, required: true },
@@ -65,11 +79,12 @@ const props = defineProps({
   isAdmin: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['like', 'delete'])
+const emit = defineEmits(['like', 'delete', 'edit'])
 const router = useRouter()
 const showPreview = ref(false)
 const previewIndex = ref(0)
 const showDblHeart = ref(false)
+const showDeleteConfirm = ref(false)
 let clickTimer = null
 
 const initial = computed(() => {
@@ -81,6 +96,10 @@ const avatarStyle = computed(() => {
   const colors = ['#F2A7B0', '#A8D8EA', '#C3B1E1', '#B5EAD7', '#FFEAA7']
   const index = (props.post.userId || 0) % colors.length
   return { background: colors[index] }
+})
+
+const canEdit = computed(() => {
+  return props.post.userId === props.currentUserId
 })
 
 const canDelete = computed(() => {
@@ -125,9 +144,20 @@ const handleLike = (event) => {
 }
 
 const handleDelete = () => {
-  if (confirm('确定删除这条微博吗？')) {
-    emit('delete', props.post.id)
-  }
+  showDeleteConfirm.value = true
+}
+
+const confirmDelete = () => {
+  showDeleteConfirm.value = false
+  emit('delete', props.post.id)
+}
+
+const cancelDelete = () => {
+  showDeleteConfirm.value = false
+}
+
+const handleEdit = () => {
+  emit('edit', props.post)
 }
 
 const previewImage = (index) => {
@@ -199,6 +229,18 @@ const previewImage = (index) => {
 .post-time {
   font-size: 0.8rem;
   color: var(--color-text-light);
+}
+
+.post-edit {
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-light);
+  background: transparent;
+}
+
+.post-edit:hover {
+  color: var(--color-blue);
+  background: #eaf4ff;
 }
 
 .post-delete {

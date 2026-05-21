@@ -26,6 +26,7 @@
           <label>确认密码</label>
           <input type="password" v-model="form.confirmPassword" placeholder="再输一次" />
         </div>
+        <p v-if="errorMsg" class="form-error">{{ errorMsg }}</p>
         <button type="submit" class="btn-primary">注册</button>
         <p class="form-footer">
           已有账号？<router-link to="/login">去登录</router-link>

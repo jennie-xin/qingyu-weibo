@@ -53,7 +53,12 @@ const fetchTopic = async () => {
   topicName.value = decodeURIComponent(route.params.name)
   try {
     const res = await topicApi.getPosts(topicName.value)
-    posts.value = res.data
+    posts.value = res.data.map(p => {
+      if (p.images && typeof p.images === 'string') {
+        try { p.images = JSON.parse(p.images) } catch (e) { p.images = null }
+      }
+      return p
+    })
   } catch (e) {
     console.error('获取话题失败:', e)
   } finally {
@@ -67,7 +72,7 @@ const handleLike = async (postId) => {
     const post = posts.value.find(p => p.id === postId)
     if (post) {
       post.liked = res.data.liked
-      post.likeCount += res.data.liked ? 1 : -1
+      post.likeCount = res.data.likeCount
     }
   } catch (e) {
     console.error(e)
@@ -121,7 +126,7 @@ watch(() => route.params.name, fetchTopic)
   justify-content: center;
 }
 
-.topic-name {
+.topic-header .topic-name {
   font-size: 1.2rem;
   font-weight: 700;
 }

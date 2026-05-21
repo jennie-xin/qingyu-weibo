@@ -22,6 +22,9 @@ export const postApi = {
   create(data) {
     return api.post('/posts', data)
   },
+  update(id, data) {
+    return api.put(`/posts/${id}`, data)
+  },
   remove(id) {
     return api.delete(`/posts/${id}`)
   }
@@ -31,8 +34,13 @@ export const commentApi = {
   getList(postId) {
     return api.get(`/posts/${postId}/comments`)
   },
-  create(postId, data) {
-    return api.post(`/posts/${postId}/comments`, data)
+  create(postId, { content, images }) {
+    const formData = new FormData()
+    formData.append('content', content)
+    if (images && images.length) {
+      images.forEach(file => formData.append('images', file))
+    }
+    return api.post(`/posts/${postId}/comments`, formData)
   }
 }
 
@@ -46,9 +54,7 @@ export const uploadApi = {
   image(file) {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post('/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    return api.post('/upload', formData)
   }
 }
 

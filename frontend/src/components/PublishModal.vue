@@ -3,7 +3,7 @@
     <div v-if="visible" class="modal-overlay" @click.self="close">
       <div class="publish-modal">
         <div class="modal-header">
-          <h3>发布轻语</h3>
+          <h3>{{ isEdit ? '编辑轻语' : '发布轻语' }}</h3>
           <button class="modal-close" @click="close">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <circle cx="12" cy="12" r="10" stroke-width="1.5" opacity="0.3"/>
@@ -63,11 +63,25 @@
               {{ content.length }}/500
             </span>
           </div>
+
+          <div v-if="hotTopics.length" class="topic-picker">
+            <span class="topic-picker-label">热门话题</span>
+            <div class="topic-chips">
+              <button
+                v-for="topic in hotTopics"
+                :key="topic.id"
+                class="topic-chip"
+                @click="insertHotTopic(topic.name)"
+              >
+                #{{ topic.name }}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
           <button class="btn-publish" :disabled="!canPublish" @click="handlePublish">
-            <span v-if="!publishing">发布</span>
+            <span v-if="!publishing">{{ isEdit ? '保存' : '发布' }}</span>
             <span v-else class="loading-dots">
               <i></i><i></i><i></i>
             </span>
@@ -79,26 +93,50 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import EmojiPicker from './EmojiPicker.vue'
 import { useToast } from '../utils/toast'
+import { topicApi } from '../api'
 
 const toast = useToast()
 
 const props = defineProps({
-  visible: { type: Boolean, default: false }
+  visible: { type: Boolean, default: false },
+  onPublish: { type: Function },
+  editPost: { type: Object, default: null }
 })
 
-const emit = defineEmits(['close', 'publish'])
+const emit = defineEmits(['close'])
 
 const content = ref('')
 const images = ref([])
 const publishing = ref(false)
 const textareaRef = ref(null)
 const showEmoji = ref(false)
+const hotTopics = ref([])
+
+const isEdit = computed(() => !!props.editPost)
 
 const canPublish = computed(() => {
   return content.value.trim().length > 0 && !publishing.value
+})
+
+watch(() => props.visible, (val) => {
+  if (val && props.editPost) {
+    content.value = props.editPost.content || ''
+    images.value = []
+    if (props.editPost.images && Array.isArray(props.editPost.images)) {
+      images.value = props.editPost.images.map(url => ({ file: null, url }))
+    }
+  } else if (!val) {
+    content.value = ''
+    images.value = []
+  }
+  if (val && !hotTopics.value.length) {
+    topicApi.getHot().then(res => {
+      hotTopics.value = res.data || []
+    }).catch(() => {})
+  }
 })
 
 const close = () => {
@@ -153,17 +191,32 @@ const insertTopic = () => {
   })
 }
 
+const insertHotTopic = (name) => {
+  content.value += `#${name}#`
+  nextTick(() => {
+    const el = textareaRef.value
+    if (el) el.focus()
+  })
+}
+
 const handlePublish = async () => {
   if (!canPublish.value) return
   publishing.value = true
   try {
-    await emit('publish', {
+    const newImages = images.value.filter(img => img.file).map(img => img.file)
+    const existingImages = images.value.filter(img => !img.file).map(img => img.url)
+    await props.onPublish({
       content: content.value,
-      images: images.value.map(img => img.file)
+      images: newImages,
+      existingImages,
+      isEdit: isEdit.value,
+      postId: props.editPost?.id
     })
     content.value = ''
     images.value = []
     close()
+  } catch (e) {
+    toast.error(e.message || '发布失败，请重试')
   } finally {
     publishing.value = false
   }
@@ -358,5 +411,42 @@ const handlePublish = async () => {
 @keyframes dotBounce {
   from { transform: translateY(0); }
   to { transform: translateY(-4px); }
+}
+
+.topic-picker {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.topic-picker-label {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.topic-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topic-chip {
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  background: rgba(242, 167, 176, 0.1);
+  color: var(--color-primary);
+  border: 1px solid rgba(242, 167, 176, 0.3);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.topic-chip:hover {
+  background: rgba(242, 167, 176, 0.2);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
 }
 </style>

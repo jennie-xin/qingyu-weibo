@@ -1,13 +1,12 @@
 package com.qingyu.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Data
 @TableName("topics")
 public class Topic {
 
@@ -16,4 +15,18 @@ public class Topic {
     private String name;
     private Integer postCount;
     private LocalDateTime createdAt;
+
+    @TableField(exist = false)
+    private Integer heat;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public Integer getPostCount() { return postCount; }
+    public void setPostCount(Integer postCount) { this.postCount = postCount; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public Integer getHeat() { return heat; }
+    public void setHeat(Integer heat) { this.heat = heat; }
 }

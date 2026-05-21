@@ -23,7 +23,7 @@
 }
 
 .footer-inner {
-  max-width: 800px;
+  max-width: 1240px;
   margin: 0 auto;
 }
 

@@ -12,7 +12,11 @@ import java.util.Map;
 public interface SearchLogMapper extends BaseMapper<SearchLog> {
 
     @Select("SELECT keyword, COUNT(*) as search_count FROM search_logs " +
-            "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) " +
+            "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
             "GROUP BY keyword ORDER BY search_count DESC LIMIT 10")
     List<Map<String, Object>> getHotSearches();
+
+    @Select("SELECT keyword, COUNT(*) as search_count FROM search_logs " +
+            "GROUP BY keyword ORDER BY search_count DESC LIMIT 10")
+    List<Map<String, Object>> getAllTimeHotSearches();
 }

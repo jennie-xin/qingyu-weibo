@@ -10,7 +10,6 @@ import com.qingyu.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,24 +53,29 @@ public class TopicService {
     }
 
     public List<Topic> getHotTopics() {
-        List<Topic> allTopics = topicMapper.selectList(
-            new QueryWrapper<Topic>().gt("post_count", 0)
+        List<Topic> topics = topicMapper.selectList(
+            new QueryWrapper<Topic>()
+                .gt("post_count", 0)
+                .orderByDesc("post_count")
+                .last("LIMIT 10")
         );
+        return topics;
+    }
 
-        allTopics.forEach(topic -> {
-            List<Post> topicPosts = postMapper.selectList(
-                new QueryWrapper<Post>().like("content", "#" + topic.getName() + "#")
+    public void decrementTopics(String content) {
+        if (content == null) return;
+        Matcher matcher = TOPIC_PATTERN.matcher(content);
+        while (matcher.find()) {
+            String topicName = matcher.group(1).trim();
+            if (topicName.isEmpty()) continue;
+            Topic topic = topicMapper.selectOne(
+                new QueryWrapper<Topic>().eq("name", topicName)
             );
-            int heat = topicPosts.stream()
-                .mapToInt(p -> (p.getViewCount() != null ? p.getViewCount() : 0)
-                    + (p.getLikeCount() != null ? p.getLikeCount() : 0) * 2
-                    + (p.getCommentCount() != null ? p.getCommentCount() : 0) * 3)
-                .sum();
-            topic.setPostCount(heat);
-        });
-
-        allTopics.sort((a, b) -> b.getPostCount() - a.getPostCount());
-        return allTopics.stream().limit(10).collect(Collectors.toList());
+            if (topic != null && topic.getPostCount() > 0) {
+                topic.setPostCount(topic.getPostCount() - 1);
+                topicMapper.updateById(topic);
+            }
+        }
     }
 
     public List<Map<String, Object>> getPostsByTopic(String topicName) {

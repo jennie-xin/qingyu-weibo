@@ -16,7 +16,13 @@ api.interceptors.request.use(config => {
 
 // 响应拦截：统一处理错误
 api.interceptors.response.use(
-  response => response.data,
+  response => {
+    const res = response.data
+    if (res.code && res.code !== 200) {
+      return Promise.reject(new Error(res.message || '请求失败'))
+    }
+    return res
+  },
   error => {
     const msg = error.response?.data?.message || '网络开小差了'
     if (error.response?.status === 401) {

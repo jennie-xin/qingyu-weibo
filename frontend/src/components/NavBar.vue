@@ -2,7 +2,6 @@
   <nav class="navbar">
     <div class="navbar-inner">
       <router-link to="/" class="navbar-brand">
-        <span class="brand-dot"></span>
         轻语
       </router-link>
 
@@ -17,6 +16,12 @@
           @keydown.enter="handleSearch"
         />
       </div>
+
+      <button v-if="userStore.isLoggedIn" class="nav-publish-btn" title="发布轻语" @click="$emit('publish')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
 
       <div class="navbar-actions" v-if="userStore.isLoggedIn">
         <button class="nav-icon" title="切换主题" @click="toggleTheme">
@@ -80,6 +85,8 @@ import { notificationApi } from '../api'
 
 const router = useRouter()
 const userStore = useUserStore()
+
+defineEmits(['publish'])
 const showMenu = ref(false)
 const unreadCount = ref(0)
 const menuRef = ref(null)
@@ -219,11 +226,23 @@ onUnmounted(() => {
   color: var(--color-text-light);
 }
 
-.brand-dot {
-  width: 14px;
-  height: 14px;
+.nav-publish-btn {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-purple));
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.nav-publish-btn:hover {
+  background: #e8939d;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(242, 167, 176, 0.3);
 }
 
 .navbar-actions {

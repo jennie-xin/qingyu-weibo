@@ -1,5 +1,12 @@
 <template>
   <div class="notifications-page">
+    <button class="btn-back" @click="$router.back()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>返回</span>
+    </button>
+
     <div class="notif-header">
       <h2 class="page-title">通知</h2>
       <button v-if="unreadCount > 0" class="btn-mark-all" @click="markAllRead">
@@ -249,6 +256,23 @@ onMounted(async () => {
   border-radius: 50%;
   background: var(--color-primary);
   flex-shrink: 0;
+}
+
+.notifications-page .btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-light);
+  background: transparent;
+  font-size: 0.9rem;
+}
+
+.notifications-page .btn-back:hover {
+  color: var(--color-text);
+  background: var(--color-card);
 }
 
 .notif-empty {

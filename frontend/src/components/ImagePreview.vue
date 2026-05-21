@@ -81,7 +81,7 @@ onUnmounted(() => {
 .image-preview-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,10 +103,11 @@ onUnmounted(() => {
 }
 
 .preview-image {
-  max-width: 90vw;
-  max-height: 85vh;
+  max-width: 60vw;
+  max-height: 60vh;
   object-fit: contain;
   border-radius: var(--radius-sm);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .preview-nav {

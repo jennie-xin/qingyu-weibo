@@ -67,6 +67,13 @@ public class UserController {
         return Result.success(data);
     }
 
+    @GetMapping("/{id}/liked")
+    public Result<List<Map<String, Object>>> getLikedPosts(@PathVariable Long id, HttpServletRequest request) {
+        Long currentUserId = (Long) request.getAttribute("userId");
+        List<Map<String, Object>> posts = postService.getLikedByUserId(id, currentUserId);
+        return Result.success(posts);
+    }
+
     @PutMapping("/profile")
     public Result<User> updateProfile(@RequestBody Map<String, String> body, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -87,6 +94,9 @@ public class UserController {
         }
         if (body.containsKey("avatar")) {
             user.setAvatar(body.get("avatar"));
+        }
+        if (body.containsKey("cover")) {
+            user.setCover(body.get("cover"));
         }
 
         userMapper.updateById(user);
